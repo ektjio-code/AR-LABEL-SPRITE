@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AR Nutrition — Sprite</title>
+  <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+  <style>
+    * { margin: 0; padding: 0; }
+    body { overflow: hidden; }
+    .a-enter-vr-button,
+    .a-enter-ar-button,
+    .a-orientation-modal,
+    [aframe-injected] {
+      display: none !important;
+    }
+    #scan-hint {
+      background: rgba(0,0,0,0.7);
+      color: #fff;
+      padding: 14px 28px;
+      border-radius: 12px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 16px;
+      text-align: center;
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 999999;
+      transition: opacity 0.5s;
+    }
+    #scan-hint.hidden { opacity: 0; pointer-events: none; }
+    #found-badge {
+      position: fixed;
+      top: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0,200,100,0.85);
+      color: #fff;
+      padding: 10px 24px;
+      border-radius: 20px;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      z-index: 999999;
+      opacity: 0;
+      transition: opacity 0.4s;
+    }
+    #found-badge.show { opacity: 1; }
+  </style>
+  <script>
+    // Component to trigger animations when target is found
+    AFRAME.registerComponent('nutrition-target', {
+      init: function () {
+        const hint = document.getElementById('scan-hint');
+        const badge = document.getElementById('found-badge');
+        const bars = document.querySelectorAll('.nutri-bar');
+        const labels = document.querySelectorAll('.nutri-label');
+
+        this.el.addEventListener('targetFound', () => {
+          hint.classList.add('hidden');
+          badge.classList.add('show');
+          setTimeout(() => badge.classList.remove('show'), 2000);
+
+          // Reset and replay animations by toggling visibility
+          bars.forEach(bar => {
+            bar.setAttribute('visible', 'true');
+          });
+          labels.forEach(label => {
+            label.setAttribute('visible', 'true');
+          });
+        });
+
+        this.el.addEventListener('targetLost', () => {
+          hint.classList.remove('hidden');
+        });
+      }
+    });
+  </script>
+</head>
+<body>
+  <div id="scan-hint">Scan the Sprite label</div>
+  <div id="found-badge">Label detected!</div>
+
+  <a-scene
+    mindar-image="imageTargetSrc: ./targets.mind;
+                   filterMinCF: 0.0001;
+                   filterBeta: 10;
+                   missTolerance: 25;"
+    color-space="sRGB"
+    renderer="colorManagement: true, physicallyCorrectLights"
+    vr-mode-ui="enabled: false"
+    device-orientation-permission-ui="enabled: false">
+
+    <a-assets timeout="3000"></a-assets>
+
+    <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+    <a-entity mindar-image-target="targetIndex: 0" nutrition-target>
+
+      <!-- ============================================ -->
+      <!-- HEADER: "INFORMASI NILAI GIZI" floating above -->
+      <!-- ============================================ -->
+      <a-entity position="0 0.55 0.05">
+        <!-- Dark background panel for header -->
+        <a-plane
+          color="#1a1a1a"
+          width="0.9"
+          height="0.12"
+          opacity="0.85"
+          material="transparent: true"
+          animation="property: opacity; from: 0; to: 0.85; dur: 600; easing: easeOutQuad">
+        </a-plane>
+        <a-text
+          value="INFORMASI NILAI GIZI"
+          align="center"
+          color="#4ADE80"
+          width="0.8"
+          position="0 0.005 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 800; easing: easeOutQuad">
+        </a-text>
+        <a-text
+          value="Sprite 250ml — Per Sajian"
+          align="center"
+          color="#ffffff"
+          width="0.55"
+          position="0 -0.03 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 800; delay: 200; easing: easeOutQuad">
+        </a-text>
+      </a-entity>
+
+      <!-- ============================================ -->
+      <!-- BAR CHART: Animated bars growing upward      -->
+      <!-- Positioned to the right of the label         -->
+      <!-- ============================================ -->
+
+      <!-- Bar 1: ENERGI — 45 kkal -->
+      <a-entity class="nutri-bar" position="-0.32 0.15 0.05">
+        <a-box
+          color="#FACC15"
+          width="0.1"
+          height="0.3"
+          depth="0.02"
+          position="0 0.15 0"
+          animation="property: scale; from: 1 0 1; to: 1 1 1; dur: 800; delay: 300; easing: easeOutBack">
+        </a-box>
+        <a-text value="45" align="center" color="#FACC15" width="0.6" position="0 0.33 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 900; easing: easeOutQuad">
+        </a-text>
+        <a-text value="kkal" align="center" color="#ffffff" width="0.4" position="0 0.28 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1000; easing: easeOutQuad">
+        </a-text>
+        <a-text value="Energi" align="center" color="#ffffff" width="0.45" position="0 -0.03 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1100; easing: easeOutQuad">
+        </a-text>
+      </a-entity>
+
+      <!-- Bar 2: GULA — 12g -->
+      <a-entity class="nutri-bar" position="-0.14 0.15 0.05">
+        <a-box
+          color="#F87171"
+          width="0.1"
+          height="0.2"
+          depth="0.02"
+          position="0 0.1 0"
+          animation="property: scale; from: 1 0 1; to: 1 1 1; dur: 800; delay: 500; easing: easeOutBack">
+        </a-box>
+        <a-text value="12g" align="center" color="#F87171" width="0.6" position="0 0.23 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1100; easing: easeOutQuad">
+        </a-text>
+        <a-text value="Gula" align="center" color="#ffffff" width="0.45" position="0 -0.03 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1300; easing: easeOutQuad">
+        </a-text>
+      </a-entity>
+
+      <!-- Bar 3: KARBO — 12g -->
+      <a-entity class="nutri-bar" position="0.04 0.15 0.05">
+        <a-box
+          color="#60A5FA"
+          width="0.1"
+          height="0.2"
+          depth="0.02"
+          position="0 0.1 0"
+          animation="property: scale; from: 1 0 1; to: 1 1 1; dur: 800; delay: 700; easing: easeOutBack">
+        </a-box>
+        <a-text value="12g" align="center" color="#60A5FA" width="0.6" position="0 0.23 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1300; easing: easeOutQuad">
+        </a-text>
+        <a-text value="Karbo" align="center" color="#ffffff" width="0.45" position="0 -0.03 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1500; easing: easeOutQuad">
+        </a-text>
+      </a-entity>
+
+      <!-- Bar 4: GARAM — 40mg -->
+      <a-entity class="nutri-bar" position="0.22 0.15 0.05">
+        <a-box
+          color="#A78BFA"
+          width="0.1"
+          height="0.12"
+          depth="0.02"
+          position="0 0.06 0"
+          animation="property: scale; from: 1 0 1; to: 1 1 1; dur: 800; delay: 900; easing: easeOutBack">
+        </a-box>
+        <a-text value="40mg" align="center" color="#A78BFA" width="0.55" position="0 0.15 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1500; easing: easeOutQuad">
+        </a-text>
+        <a-text value="Garam" align="center" color="#ffffff" width="0.45" position="0 -0.03 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1700; easing: easeOutQuad">
+        </a-text>
+      </a-entity>
+
+      <!-- ============================================ -->
+      <!-- SIDE PANEL: Lemak & Protein (both 0)         -->
+      <!-- Positioned to the left                       -->
+      <!-- ============================================ -->
+      <a-entity position="0.42 0.2 0.05">
+        <a-plane
+          color="#1a1a1a"
+          width="0.28"
+          height="0.22"
+          opacity="0.8"
+          material="transparent: true"
+          animation="property: opacity; from: 0; to: 0.8; dur: 600; delay: 1200; easing: easeOutQuad">
+        </a-plane>
+        <a-text value="Lemak" align="center" color="#9CA3AF" width="0.5" position="0 0.05 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1400; easing: easeOutQuad">
+        </a-text>
+        <a-text value="0g" align="center" color="#4ADE80" width="0.6" position="0 0.02 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1500; easing: easeOutQuad">
+        </a-text>
+        <a-text value="Protein" align="center" color="#9CA3AF" width="0.5" position="0 -0.04 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1600; easing: easeOutQuad">
+        </a-text>
+        <a-text value="0g" align="center" color="#4ADE80" width="0.6" position="0 -0.07 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 1700; easing: easeOutQuad">
+        </a-text>
+      </a-entity>
+
+      <!-- ============================================ -->
+      <!-- BOTTOM BADGE: "Lebih Sedikit Gula"           -->
+      <!-- ============================================ -->
+      <a-entity position="0 -0.35 0.05">
+        <a-plane
+          color="#166534"
+          width="0.6"
+          height="0.08"
+          opacity="0.9"
+          material="transparent: true"
+          animation="property: scale; from: 0 0 0; to: 1 1 1; dur: 500; delay: 1800; easing: easeOutBack">
+        </a-plane>
+        <a-text value="Lebih Sedikit Gula" align="center" color="#4ADE80" width="0.65" position="0 0.003 0.01"
+          animation="property: opacity; from: 0; to: 1; dur: 400; delay: 2000; easing: easeOutQuad">
+        </a-text>
+      </a-entity>
+
+      <!-- Lighting -->
+      <a-light type="ambient" color="#ffffff" intensity="0.7"></a-light>
+      <a-light type="directional" color="#ffffff" intensity="0.5" position="0 2 1"></a-light>
+
+    </a-entity>
+  </a-scene>
+</body>
+</html>
